@@ -1,0 +1,157 @@
+/* 
+=========================================================
+wireframe.css - Balsamiq Mockup Style Wireframe Mode
+=========================================================
+*/
+
+body.wireframe-mode {
+    --bg-main: #f5f5dc !important; /* Slightly creamy white paper */
+    --bg-card: #ffffff !important;
+    --bg-hover: #e0e0e0 !important;
+    --text: #333333 !important;
+    --text-muted: #555555 !important;
+    --text-secondary: #444444 !important;
+    --border-color: #333333 !important;
+    --border-light: #555555 !important;
+    
+    --accent: #333333 !important;
+    --accent-glow: transparent !important;
+    --primary: #333333 !important;
+    --success: #333333 !important;
+    --warning: #333333 !important;
+    --danger: #333333 !important;
+    
+    --gradient-bg: #ffffff !important;
+    
+    font-family: 'Balsamiq Sans', 'Comic Sans MS', cursive, sans-serif !important;
+    background: var(--bg-main) !important;
+    color: var(--text) !important;
+    filter: grayscale(100%) !important; /* Force all descendant nodes to 100% B/W */
+}
+
+/* Override all fonts */
+.wireframe-mode * {
+    font-family: 'Balsamiq Sans', 'Comic Sans MS', cursive, sans-serif !important;
+    text-shadow: none !important;
+    box-shadow: none !important;
+    letter-spacing: 0.5px !important;
+}
+
+/* Card Sketch Borders */
+.wireframe-mode .stat-card,
+.wireframe-mode .chart-card,
+.wireframe-mode .prediction-form-card,
+.wireframe-mode .prediction-result-card,
+.wireframe-mode .data-section,
+.wireframe-mode .report-card,
+.wireframe-mode .sidebar,
+.wireframe-mode .topbar,
+.wireframe-mode .modal-dialog {
+    background: var(--bg-card) !important;
+    border: 2px solid #333 !important;
+    border-radius: 5px !important;
+    /* Sketchy drop shadow */
+    box-shadow: 4px 4px 0px 0px rgba(51,51,51,0.2) !important;
+}
+
+/* Buttons */
+.wireframe-mode button,
+.wireframe-mode .btn,
+.wireframe-mode .chatbot-toggle,
+.wireframe-mode .btn-predict,
+.wireframe-mode .map-control-btn,
+.wireframe-mode .filter-btn {
+    background: transparent !important;
+    color: #333 !important;
+    border: 2px solid #333 !important;
+    border-radius: 3px !important;
+    font-weight: bold !important;
+}
+.wireframe-mode button:hover,
+.wireframe-mode .btn-predict:hover {
+    background: #e0e0e0 !important;
+}
+.wireframe-mode .active,
+.wireframe-mode .nav-item.active {
+    background: #e0e0e0 !important;
+    border-color: #333 !important;
+    color: #333 !important;
+}
+
+/* Inputs, Selects, Ranges */
+.wireframe-mode input,
+.wireframe-mode select,
+.wireframe-mode .form-select,
+.wireframe-mode .form-range {
+    border: 2px solid #333 !important;
+    background: transparent !important;
+    border-radius: 2px !important;
+    color: #333 !important;
+}
+
+/* Disable gradients, glows, and custom colors on specific elements */
+.wireframe-mode .stat-card-icon,
+.wireframe-mode .logo-icon,
+.wireframe-mode .pulse,
+.wireframe-mode .level-indicator {
+    background: transparent !important;
+    color: #333 !important;
+    border: 2px solid #333 !important;
+}
+
+.wireframe-mode .prob-bar-fill,
+.wireframe-mode .fi-bar-fill {
+    background: #555 !important;
+}
+
+/* Disable weather overlay particles */
+.wireframe-mode #global-weather-overlay,
+.wireframe-mode .bg-decoration {
+    display: none !important;
+}
+
+/* Adjust maps and all canvas charts to grayscale via CSS filter */
+.wireframe-mode .leaflet-container,
+.wireframe-mode canvas,
+.wireframe-mode img {
+    filter: grayscale(100%) contrast(1.2) sepia(20%) !important;
+}
+
+/* Force mono text colors on all dynamic statistic components */
+.wireframe-mode .stat-card-value,
+.wireframe-mode .stat-card-label,
+.wireframe-mode .stat-card-sub,
+.wireframe-mode .chart-card-title,
+.wireframe-mode .chart-card-badge,
+.wireframe-mode .level-label,
+.wireframe-mode .decision-reasoning,
+.wireframe-mode .result-risk-label,
+.wireframe-mode .result-risk-desc,
+.wireframe-mode .prob-bar-value,
+.wireframe-mode .prob-bar-label,
+.wireframe-mode .fi-bar-header span {
+    color: #333 !important;
+}
+
+/* Override inline background/borders on dynamic result panels */
+.wireframe-mode .decision-level,
+.wireframe-mode .result-risk-display {
+    background: transparent !important;
+    border-color: #333 !important;
+}
+
+/* Tables */
+.wireframe-mode table th,
+.wireframe-mode table td {
+    border-bottom: 2px solid #333 !important;
+}
+.wireframe-mode tbody tr:hover {
+    background: #e0e0e0 !important;
+}
+
+/* Risk Badges */
+.wireframe-mode .risk-badge {
+    background: transparent !important;
+    border: 1px solid #333 !important;
+    color: #333 !important;
+}

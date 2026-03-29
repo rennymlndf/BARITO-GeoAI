@@ -1,0 +1,1130 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Geospatial Artificial Intelligence">
+    <title>BARITO - Banjarmasin Adaptive Rob Intelligence and Temporal Observation</title>
+    <link rel="stylesheet" href="css/style.css?v=3">
+    <link rel="stylesheet" href="css/wireframe.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Balsamiq+Sans:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.7.2/vanilla-tilt.min.js" defer></script>
+</head>
+
+<body>
+    <!-- Global Weather Overlay -->
+    <div id="global-weather-overlay"></div>
+
+    <!-- Toast Container -->
+    <div id="toast-container"></div>
+
+    <!-- Background Decoration -->
+    <div class="bg-decoration">
+        <div class="circle circle-1"></div>
+        <div class="circle circle-2"></div>
+        <div class="circle circle-3"></div>
+    </div>
+
+    <!-- Kelurahan Modal -->
+    <div id="kelurahan-modal" class="modal-backdrop" onclick="if(event.target===this)closeModal()">
+        <div class="modal-dialog">
+            <button class="modal-close" onclick="closeModal()"><i class="fas fa-times"></i></button>
+            <div class="modal-body" id="modal-content"></div>
+        </div>
+    </div>
+
+    <!-- Climate Modal -->
+    <div id="climate-modal" class="modal-backdrop" onclick="if(event.target===this)closeClimateModal()">
+        <div class="modal-dialog" style="max-width: 850px; width: 95%;">
+            <button class="modal-close" onclick="closeClimateModal()"><i class="fas fa-times"></i></button>
+            <div class="modal-body" id="climate-modal-content" style="padding: 24px;"></div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="loader"></div>
+        <div class="loading-text">BARITO</div>
+        <div class="loading-sub">Memuat model Hybrid RF-LSTM & data spasial...</div>
+    </div>
+
+    <div class="app-layout">
+
+        <!-- ═══ SIDEBAR ═══ -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <div class="logo-icon"><i class="fas fa-water"></i></div>
+                    <span class="logo-text">BARITO</span>
+                </div>
+                <div class="sidebar-subtitle">Banjarmasin Adaptive Rob Intelligence and Temporal Observation</div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section-title">Menu Utama</div>
+                <a class="nav-item active" data-view="dashboard">
+                    <i class="fas fa-chart-line"></i><span>Dashboard</span>
+                </a>
+                <a class="nav-item" data-view="map">
+                    <i class="fas fa-map-marked-alt"></i><span>Peta Analisis</span>
+                </a>
+                <a class="nav-item" data-view="prediction">
+                    <i class="fas fa-brain"></i><span>Prediksi Risiko</span>
+                </a>
+
+                <div class="nav-section-title">Manajemen Data</div>
+                <a class="nav-item" data-view="data">
+                    <i class="fas fa-database"></i><span>Data Kelurahan</span>
+                </a>
+                <a class="nav-item" data-view="report">
+                    <i class="fas fa-file-alt"></i><span>Laporan</span>
+                </a>
+
+                <a class="nav-item admin-only-btn" id="nav-climate-control" style="display:none;">
+                    <i class="fas fa-cloud-sun-rain"></i><span>Pengendali Iklim Global</span>
+                </a>
+                
+                <a class="nav-item admin-only-btn" id="nav-model-management" data-view="model-management" style="display:none;">
+                    <i class="fas fa-brain"></i><span>Manajemen Model AI</span>
+                </a>
+
+                <a class="nav-item" id="nav-ai-assistant">
+                    <i class="fas fa-robot"></i><span>BARITO AI Assistant</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="model-status">
+                    <div class="pulse"></div>
+                    <span id="model-accuracy">Model Active</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- ═══ MAIN CONTENT ═══ -->
+        <main class="main-content">
+
+            <!-- Top Bar -->
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button class="sidebar-toggle" id="sidebar-toggle" title="Toggle Sidebar">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <span class="topbar-title" id="topbar-view-title">Dashboard</span>
+                    <span class="topbar-breadcrumb">Kota Banjarmasin, Kalimantan Selatan</span>
+                </div>
+                <div class="topbar-right">
+                    <div class="topbar-badge">
+                        <i class="fas fa-microchip"></i>
+                        <span id="topbar-model-badge">Hybrid RF-LSTM & SHAP</span>
+                    </div>
+                    <div class="topbar-badge">
+                        <i class="fas fa-map-pin"></i>
+                        <span>52 Kelurahan</span>
+                    </div>
+                    <div class="topbar-badge temporal-badge">
+                        <i class="fas fa-clock"></i>
+                        <span id="topbar-month-badge">Spatio-Temporal</span>
+                    </div>
+
+                    <!-- Wireframe Buttons -->
+                    <button class="topbar-login-btn" id="export-wireframe-btn" title="Screenshot Wireframe (PNG)" style="display: none; background: #333; color: white; border: 2px solid #333; font-family: 'Balsamiq Sans', cursive; margin-right: 10px;">
+                        <i class="fas fa-camera"></i>
+                        <span>Export PNG</span>
+                    </button>
+                    <button class="topbar-login-btn" id="exit-wireframe-btn" title="Tutup Wireframe Mode" style="display: none; background: transparent; border: 2px solid #333; color: #333; font-family: 'Balsamiq Sans', cursive; margin-right: 15px;">
+                        <i class="fas fa-times"></i>
+                        <span>Tutup</span>
+                    </button>
+                    <button class="topbar-login-btn" id="wireframe-toggle-btn" title="Buka Wireframe Mode" style="background: transparent; border: 1px solid var(--border-light); color: var(--text-secondary); margin-right: 15px;">
+                        <i class="fas fa-pencil-ruler"></i>
+                        <span>Wireframe</span>
+                    </button>
+                    
+                    <!-- Login Button -->
+                    <button class="topbar-login-btn" id="login-trigger-btn">
+                        <i class="fas fa-user-shield"></i>
+                        <span id="login-btn-text">Admin Login</span>
+                    </button>
+                    <!-- Admin User Info (Hidden by default) -->
+                    <div id="admin-user-info" style="display:none; align-items:center; gap:10px;">
+                        <span style="font-size:0.9rem; font-weight:600; color:var(--text); margin-right:5px;">👋 Selamat
+                            datang, <span style="color:var(--accent);">Admin</span>!</span>
+                        <div class="admin-badge">ADMIN</div>
+                        <button class="topbar-logout-btn" onclick="logoutAdmin()" title="Logout">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Content -->
+            <div class="content-area">
+
+                <!-- ═══ DASHBOARD VIEW ═══ -->
+                <section id="view-dashboard" class="view active">
+                    <!-- Temporal Month Slider -->
+                    <div class="temporal-control-bar stagger-1">
+                        <div class="temporal-control-header">
+                            <div class="temporal-control-title" style="display:flex; align-items:center; gap:10px;">
+                                <div><i class="fas fa-clock"></i> <span>Kontrol Spatio-Temporal</span></div>
+                                <button id="btn-play-temporal" title="Putar Animasi 12 Bulan"
+                                    style="padding:4px 10px; background:var(--accent); color:white; border:none; border-radius:12px; cursor:pointer; font-size:0.75rem; display:flex; align-items:center; gap:5px;">
+                                    <i class="fas fa-play"></i> Auto-Play
+                                </button>
+                            </div>
+                            <div class="temporal-month-label" id="temporal-month-label">Seluruh Tahun (Rata-rata)</div>
+                        </div>
+                        <div class="temporal-slider-wrapper">
+                            <span class="temporal-slider-label">Jan</span>
+                            <input type="range" class="temporal-slider" id="temporal-month-slider" min="0" max="12"
+                                step="1" value="0">
+                            <span class="temporal-slider-label">Des</span>
+                        </div>
+                        <div class="temporal-month-chips" id="temporal-month-chips">
+                            <button class="month-chip active" data-month="0">Semua</button>
+                            <button class="month-chip" data-month="1">Jan</button>
+                            <button class="month-chip" data-month="2">Feb</button>
+                            <button class="month-chip" data-month="3">Mar</button>
+                            <button class="month-chip" data-month="4">Apr</button>
+                            <button class="month-chip" data-month="5">Mei</button>
+                            <button class="month-chip" data-month="6">Jun</button>
+                            <button class="month-chip" data-month="7">Jul</button>
+                            <button class="month-chip" data-month="8">Agu</button>
+                            <button class="month-chip" data-month="9">Sep</button>
+                            <button class="month-chip" data-month="10">Okt</button>
+                            <button class="month-chip" data-month="11">Nov</button>
+                            <button class="month-chip" data-month="12">Des</button>
+                        </div>
+                    </div>
+
+                    <!-- Stats Cards -->
+                    <div class="stats-grid stagger-1">
+                        <div class="stat-card accent animate-in tilt-card">
+                            <div class="stat-card-header">
+                                <div class="stat-card-icon"><i class="fas fa-map-location-dot"></i></div>
+                                <span class="stat-card-label">Total Kelurahan</span>
+                            </div>
+                            <div class="stat-card-value" id="stat-total">0</div>
+                            <div class="stat-card-sub">5 Kecamatan dianalisis</div>
+                        </div>
+                        <div class="stat-card danger animate-in tilt-card">
+                            <div class="stat-card-header">
+                                <div class="stat-card-icon"><i class="fas fa-exclamation-circle"></i></div>
+                                <span class="stat-card-label">Sangat Rawan</span>
+                            </div>
+                            <div class="stat-card-value" id="stat-sangat-rawan">0</div>
+                            <div class="stat-card-sub" id="stat-sangat-rawan-sub">Kelurahan risiko sangat tinggi</div>
+                        </div>
+                        <div class="stat-card warning animate-in tilt-card">
+                            <div class="stat-card-header">
+                                <div class="stat-card-icon"><i class="fas fa-exclamation-circle"></i></div>
+                                <span class="stat-card-label">Rawan</span>
+                            </div>
+                            <div class="stat-card-value" id="stat-rawan">0</div>
+                            <div class="stat-card-sub" id="stat-rawan-sub">Kelurahan risiko tinggi</div>
+                        </div>
+                        <div class="stat-card success animate-in tilt-card">
+                            <div class="stat-card-header">
+                                <div class="stat-card-icon"><i class="fas fa-cogs"></i></div>
+                                <span class="stat-card-label">Akurasi Model</span>
+                            </div>
+                            <div class="stat-card-value" id="stat-accuracy">0%</div>
+                            <div class="stat-card-sub">Hybrid RF-LSTM (TF & Sklearn)</div>
+                        </div>
+
+                        <!-- AI Intelligence Summary (Below Total) -->
+                        <div class="stat-card insight-card tilt-card" id="dashboard-ai-card">
+                            <div class="stat-card-header">
+                                <div class="stat-card-icon" style="background: var(--accent); color: white;"><i
+                                        class="fas fa-magic"></i></div>
+                                <span class="stat-card-label" style="color: var(--accent); font-weight: 700;">AI
+                                    Intelligence Summary</span>
+                            </div>
+                            <div class="ai-summary-content">
+                                <p id="ai-insight-text">
+                                    Sistem siap menganalisis data spatio-temporal Banjarmasin. Gunakan AI untuk
+                                    mendapatkan ringkasan strategis mitigasi banjir rob.
+                                </p>
+                                <button class="btn-insight"
+                                    onclick="triggerBaritoAI('Berikan ringkasan eksekutif tentang kondisi banjir rob Banjarmasin saat ini berdasarkan 52 kelurahan yang Anda analisis termasuk variasi temporal per bulan.')">
+                                    <i class="fas fa-bolt"></i> Generate Smart Analysis
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Intelligence Control Tower (Below Rawan) -->
+                        <div class="stat-card intelligence-tower tilt-card" id="intelligence-control-tower">
+                            <div class="stat-card-header">
+                                <div class="stat-card-icon" style="background: var(--danger); color: white;"><i
+                                        class="fas fa-satellite"></i></div>
+                                <span class="stat-card-label"
+                                    style="color: var(--danger); font-weight: 700;">Intelligence Control Tower</span>
+                            </div>
+                            <div class="tower-content">
+                                <div class="tower-signals" id="tower-signals-list">
+                                    <div class="signal-item"><i class="fas fa-sync fa-spin"></i> Mensinkronisasi sinyal
+                                        geospasial...</div>
+                                </div>
+                                <div class="tower-decision" id="tower-active-decision">
+                                    <div class="decision-level">
+                                        <span class="level-indicator level-green"></span>
+                                        <span class="level-label">MENUNGGU DATA</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts Row 1 -->
+                    <div class="charts-grid stagger-3">
+                        <div class="chart-card">
+                            <div class="chart-card-header">
+                                <span class="chart-card-title">Distribusi Tingkat Risiko</span>
+                                <span class="chart-card-badge">Doughnut</span>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="riskDistChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="chart-card">
+                            <div class="chart-card-header">
+                                <span class="chart-card-title">Risiko per Kecamatan</span>
+                                <span class="chart-card-badge">Bar Chart</span>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="kecamatanRiskChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts Row 2 -->
+                    <div class="charts-grid stagger-4">
+                        <div class="chart-card">
+                            <div class="chart-card-header">
+                                <span class="chart-card-title">Data Pasang Surut & Kejadian Banjir</span>
+                                <span class="chart-card-badge">Time Series</span>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="tidalChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="chart-card">
+                            <div class="chart-card-header">
+                                <span class="chart-card-title">Feature Importance</span>
+                                <span class="chart-card-badge">Hybrid RF-LSTM & SHAP</span>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="featureImportanceChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts Row 3: Temporal -->
+                    <div class="charts-grid stagger-5">
+                        <div class="chart-card">
+                            <div class="chart-card-header">
+                                <span class="chart-card-title">Evolusi Risiko Temporal</span>
+                                <span class="chart-card-badge temporal-badge-sm">Spatio-Temporal</span>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="temporalRiskChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="chart-card">
+                            <div class="chart-card-header">
+                                <span class="chart-card-title">Distribusi Risiko per Bulan</span>
+                                <span class="chart-card-badge temporal-badge-sm">Heatmap</span>
+                            </div>
+                            <div class="chart-container">
+                                <canvas id="monthlyHeatmapChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Model Info Full-Width -->
+                    <div class="charts-grid stagger-6">
+                        <div class="chart-card full-width-card">
+                            <div class="chart-card-header">
+                                <span class="chart-card-title">Informasi Model & Metodologi</span>
+                                <span class="chart-card-badge">Hybrid RF-LSTM & SHAP</span>
+                            </div>
+                            <div style="padding: 10px 0;">
+                                <p
+                                    style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:16px;line-height:1.7">
+                                    Model <strong>Hybrid Bidirectional RF-LSTM</strong> (TensorFlow & scikit-learn)
+                                    mengklasifikasikan kerawanan banjir rob
+                                    berdasarkan <strong>16 fitur hibrida</strong> (8 faktor spasial statis + 8 memori embeddings temporal hasil ekstraksi riwayat cuaca 3 bulan mundur).
+                                    Dataset: 7.488 sampel (52 kelurahan × 12 bulan × 12 tahun historis 2015-Maret 2026)
+                                    di 5 kecamatan Kota Banjarmasin. Backend: Python/Flask.
+                                </p>
+                                <div class="model-info-grid">
+                                    <div class="model-info-item">
+                                        <div class="model-info-value" id="model-trees">100</div>
+                                        <div class="model-info-label">Decision Trees</div>
+                                    </div>
+                                    <div class="model-info-item">
+                                        <div class="model-info-value" id="model-depth">8</div>
+                                        <div class="model-info-label">Max Depth</div>
+                                    </div>
+                                    <div class="model-info-item">
+                                        <div class="model-info-value" id="model-features-count">16</div>
+                                        <div class="model-info-label">Features used</div>
+                                    </div>
+                                </div>
+                                <div
+                                    style="margin-top:16px;padding:12px;background:var(--bg-hover);border-radius:var(--radius-sm);border:1px solid var(--border-color)">
+                                    <div
+                                        style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); margin-bottom: 8px">
+                                        Parameter Analisis</div>
+                                    <div style="display:flex;flex-wrap:wrap;gap:6px">
+                                        <span
+                                            style="padding:3px 8px;background:rgba(6,182,212,0.1);color:var(--accent);border-radius:10px;font-size:0.72rem">Elevasi</span>
+                                        <span
+                                            style="padding:3px 8px;background:rgba(59,130,246,0.1);color:#3b82f6;border-radius:10px;font-size:0.72rem">Jarak
+                                            Sungai</span>
+                                        <span
+                                            style="padding:3px 8px;background:rgba(139,92,246,0.1);color:#8b5cf6;border-radius:10px;font-size:0.72rem">Curah
+                                            Hujan</span>
+                                        <span
+                                            style="padding:3px 8px;background:rgba(236,72,153,0.1);color:#ec4899;border-radius:10px;font-size:0.72rem">Tata
+                                            Guna Lahan</span>
+                                        <span
+                                            style="padding:3px 8px;background:rgba(249,115,22,0.1);color:var(--orange);border-radius:10px;font-size:0.72rem">Kerapatan
+                                            Bangun</span>
+                                        <span
+                                            style="padding:3px 8px;background:rgba(249,115,22,0.1);color:#f97316;border-radius:10px;font-size:0.72rem">Drainase</span>
+                                        <span
+                                            style="padding:3px 8px;background:rgba(245,158,11,0.1);color:#f59e0b;border-radius:10px;font-size:0.72rem">Pasang
+                                            Surut</span>
+                                        <span
+                                            style="padding:3px 8px;background:rgba(16,185,129,0.1);color:#10b981;border-radius:10px;font-size:0.72rem">Kepadatan
+                                            Penduduk</span>
+                                        <span
+                                            style="padding:3px 8px;background:rgba(239,68,68,0.1);color:#ef4444;border-radius:10px;font-size:0.72rem">Jenis
+                                            Tanah</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Model Info Hub is now full width -->
+                </section>
+
+                <!-- ═══ MAP VIEW ═══ -->
+                <section id="view-map" class="view">
+                    <div class="map-wrapper">
+                        <div class="map-container" style="position: relative;">
+                            <div id="weather-effect-overlay"></div>
+                            <div id="radar-sweep-container">
+                                <div class="radar-sweep"></div>
+                                <div class="radar-dot"></div>
+                            </div>
+                            <div id="main-map"></div>
+                            <!-- Map Temporal Control -->
+                            <div class="map-temporal-control">
+                                <label><i class="fas fa-calendar-alt"></i> Bulan:</label>
+                                <select id="map-month-select">
+                                    <option value="0">Semua (Rata-rata)</option>
+                                    <option value="1">Januari</option>
+                                    <option value="2">Februari</option>
+                                    <option value="3">Maret</option>
+                                    <option value="4">April</option>
+                                    <option value="5">Mei</option>
+                                    <option value="6">Juni</option>
+                                    <option value="7">Juli</option>
+                                    <option value="8">Agustus</option>
+                                    <option value="9">September</option>
+                                    <option value="10">Oktober</option>
+                                    <option value="11">November</option>
+                                    <option value="12">Desember</option>
+                                </select>
+                            </div>
+                            <div class="map-overlay-controls">
+                                <button class="map-control-btn active" data-risk="0" onclick="handleRiskFilter(this)">
+                                    <i class="fas fa-layer-group"></i> Semua
+                                </button>
+                                <button class="map-control-btn" data-risk="4" onclick="handleRiskFilter(this)">
+                                    <i class="fas fa-exclamation-circle"></i> Sangat Rawan
+                                </button>
+                                <button class="map-control-btn" data-risk="3" onclick="handleRiskFilter(this)">
+                                    <i class="fas fa-exclamation-triangle"></i> Rawan
+                                </button>
+                                <button class="map-control-btn" data-risk="2" onclick="handleRiskFilter(this)">
+                                    <i class="fas fa-info-circle"></i> Sedang
+                                </button>
+                                <button class="map-control-btn" data-risk="1" onclick="handleRiskFilter(this)">
+                                    <i class="fas fa-check-circle"></i> Aman
+                                </button>
+                            </div>
+                            
+                            <!-- 3D Toggle Control di Bawah Kanan -->
+                            <div class="map-3d-control">
+                                <button class="map-control-btn" id="btn-toggle-3d" onclick="toggle3DMapMode(this)" style="padding: 10px 18px; font-weight: 700; box-shadow: 0 4px 15px rgba(0,0,0,0.15);">
+                                    <i class="fas fa-cube"></i> Mode Hologram 3D
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="map-sidebar">
+                            <!-- Legend -->
+                            <div class="map-legend">
+                                <div class="map-legend-title">
+                                    <i class="fas fa-palette"></i> Legenda Risiko
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-dot" style="background:#ef4444"></div>
+                                    <span class="legend-label">Sangat Rawan</span>
+                                    <span class="legend-count">7</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-dot" style="background:#f97316"></div>
+                                    <span class="legend-label">Rawan</span>
+                                    <span class="legend-count">5</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-dot" style="background:#f59e0b"></div>
+                                    <span class="legend-label">Sedang</span>
+                                    <span class="legend-count">5</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-dot" style="background:#10b981"></div>
+                                    <span class="legend-label">Aman</span>
+                                    <span class="legend-count">5</span>
+                                </div>
+
+                                <div class="kecamatan-filters">
+                                    <button class="kecamatan-btn active" data-kecamatan="Semua"
+                                        onclick="handleKecamatanFilter(this)">Semua</button>
+                                    <button class="kecamatan-btn" data-kecamatan="Banjarmasin Utara"
+                                        onclick="handleKecamatanFilter(this)">Utara</button>
+                                    <button class="kecamatan-btn" data-kecamatan="Banjarmasin Tengah"
+                                        onclick="handleKecamatanFilter(this)">Tengah</button>
+                                    <button class="kecamatan-btn" data-kecamatan="Banjarmasin Barat"
+                                        onclick="handleKecamatanFilter(this)">Barat</button>
+                                    <button class="kecamatan-btn" data-kecamatan="Banjarmasin Timur"
+                                        onclick="handleKecamatanFilter(this)">Timur</button>
+                                    <button class="kecamatan-btn" data-kecamatan="Banjarmasin Selatan"
+                                        onclick="handleKecamatanFilter(this)">Selatan</button>
+                                </div>
+                            </div>
+
+                            <!-- Info Panel -->
+                            <div class="map-info-panel">
+                                <div class="map-info-title">
+                                    <i class="fas fa-info-circle"></i> Detail Kelurahan
+                                </div>
+                                <div id="map-info-placeholder" class="info-placeholder">
+                                    <i class="fas fa-mouse-pointer"></i>
+                                    <p>Klik marker pada peta untuk melihat detail kelurahan</p>
+                                </div>
+                                <div id="map-info-detail" style="display:none"></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ═══ PREDICTION VIEW ═══ -->
+                <section id="view-prediction" class="view">
+                    <div class="prediction-layout">
+                        <!-- Input Form -->
+                        <div class="prediction-form-card">
+                            <div class="section-title">
+                                <i class="fas fa-sliders" style="color:var(--accent);margin-right:8px"></i>
+                                Input Parameter Spasial
+                            </div>
+                            <div class="section-subtitle">Masukkan parameter untuk memprediksi tingkat kerawanan banjir
+                                rob</div>
+                            <div id="live-risk-preview" class="live-risk-preview"></div>
+
+                            <form id="prediction-form">
+                                <div class="form-grid">
+                                    <!-- Bulan (TEMPORAL) -->
+                                    <div class="form-group temporal-form-group">
+                                        <label class="form-label"><i class="fas fa-calendar-alt"></i> Bulan Prediksi
+                                            <span class="temporal-tag">TEMPORAL</span></label>
+                                        <select class="form-select" name="month" id="predict-month">
+                                            <option value="1">Januari</option>
+                                            <option value="2">Februari</option>
+                                            <option value="3">Maret</option>
+                                            <option value="4">April</option>
+                                            <option value="5">Mei</option>
+                                            <option value="6" selected>Juni</option>
+                                            <option value="7">Juli</option>
+                                            <option value="8">Agustus</option>
+                                            <option value="9">September</option>
+                                            <option value="10">Oktober</option>
+                                            <option value="11">November</option>
+                                            <option value="12">Desember</option>
+                                        </select>
+                                        <div class="temporal-info" id="temporal-info">
+                                            <span id="temporal-tidal"></span>
+                                            <span id="temporal-rain"></span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Elevasi -->
+                                    <div class="form-group">
+                                        <label class="form-label"><i class="fas fa-mountain"></i> Elevasi (m
+                                            dpl)</label>
+                                        <div class="form-range-wrapper">
+                                            <input type="range" class="form-range" name="elevasi" min="0.1" max="5.0"
+                                                step="0.1" value="1.0">
+                                            <span class="form-range-value" id="elevasi-value">1.0</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Jarak Sungai -->
+                                    <div class="form-group">
+                                        <label class="form-label"><i class="fas fa-water"></i> Jarak ke Sungai
+                                            (m)</label>
+                                        <div class="form-range-wrapper">
+                                            <input type="range" class="form-range" name="jarakSungai" min="10"
+                                                max="2000" step="10" value="300">
+                                            <span class="form-range-value" id="jarakSungai-value">300</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Curah Hujan -->
+                                    <div class="form-group">
+                                        <label class="form-label"><i class="fas fa-cloud-rain"></i> Curah Hujan
+                                            (mm/thn)</label>
+                                        <div class="form-range-wrapper">
+                                            <input type="range" class="form-range" name="curahHujan" min="1800"
+                                                max="3500" step="50" value="2700">
+                                            <span class="form-range-value" id="curahHujan-value">2700</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Tata Guna Lahan -->
+                                    <div class="form-group">
+                                        <label class="form-label"><i class="fas fa-city"></i> Tata Guna Lahan</label>
+                                        <select class="form-select" name="tataGunaLahan">
+                                            <option value="1">Permukiman Padat</option>
+                                            <option value="2">Permukiman</option>
+                                            <option value="3">Komersial</option>
+                                            <option value="4">Perairan/Rawa</option>
+                                            <option value="5">Campuran</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Kualitas Drainase -->
+                                    <div class="form-group">
+                                        <label class="form-label"><i class="fas fa-arrows-down-to-line"></i> Kualitas
+                                            Drainase</label>
+                                        <div class="form-range-wrapper">
+                                            <input type="range" class="form-range" name="kualitasDrainase" min="1"
+                                                max="10" step="1" value="5">
+                                            <span class="form-range-value" id="kualitasDrainase-value">5</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Pengaruh Pasang Surut -->
+                                    <div class="form-group">
+                                        <label class="form-label"><i class="fas fa-wave-square"></i> Pengaruh Pasang
+                                            Surut</label>
+                                        <div class="form-range-wrapper">
+                                            <input type="range" class="form-range" name="pengaruhPasang" min="1"
+                                                max="10" step="1" value="5">
+                                            <span class="form-range-value" id="pengaruhPasang-value">5</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Kepadatan Penduduk -->
+                                    <div class="form-group">
+                                        <label class="form-label"><i class="fas fa-users"></i> Kepadatan Penduduk
+                                            (/km²)</label>
+                                        <div class="form-range-wrapper">
+                                            <input type="range" class="form-range" name="kepadatanPenduduk" min="500"
+                                                max="15000" step="100" value="8000">
+                                            <span class="form-range-value" id="kepadatanPenduduk-value">8000</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Jenis Tanah -->
+                                    <div class="form-group">
+                                        <label class="form-label"><i class="fas fa-layer-group"></i> Jenis Tanah</label>
+                                        <select class="form-select" name="jenisTanah">
+                                            <option value="1">Gambut</option>
+                                            <option value="2">Lempung</option>
+                                            <option value="3">Lanau</option>
+                                            <option value="4">Aluvial</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <button type="button" class="btn-predict" id="btn-predict">
+                                    <i class="fas fa-brain"></i>
+                                    Jalankan Prediksi Spatio-Temporal
+                                </button>
+
+                                <!-- Temporal Profile Result -->
+                                <div id="temporal-profile-section" style="display:none; margin-top:20px;">
+                                    <div class="section-title" style="font-size:0.9rem;">
+                                        <i class="fas fa-chart-line" style="color:var(--accent);margin-right:8px"></i>
+                                        Profil Risiko 12 Bulan
+                                    </div>
+                                    <div class="chart-container" style="height:200px;">
+                                        <canvas id="predictionTemporalChart"></canvas>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Results -->
+                        <div class="prediction-result-card">
+                            <div class="section-title">
+                                <i class="fas fa-chart-bar" style="color:var(--accent);margin-right:8px"></i>
+                                Hasil Prediksi
+                            </div>
+                            <div class="section-subtitle">Hasil klasifikasi spatio-temporal berdasarkan model Random
+                                Forest (Python/scikit-learn)</div>
+
+                            <div id="result-empty" class="result-empty">
+                                <i class="fas fa-flask"></i>
+                                <p>Masukkan parameter dan klik "Jalankan Prediksi" untuk melihat hasil analisis</p>
+                            </div>
+
+                            <div id="result-content" class="result-content">
+                                <div class="result-risk-display" id="result-risk-display">
+                                    <div class="gauge-container" id="result-gauge"></div>
+                                    <div class="result-risk-label" id="result-risk-label">-</div>
+                                    <div class="result-risk-desc" id="result-risk-desc"></div>
+                                    <button class="ai-btn-inline" id="ai-explain-btn"
+                                        style="margin-top:15px;display:none;">
+                                        <i class="fas fa-robot"></i> Jelaskan alasan teknis dengan AI
+                                    </button>
+                                </div>
+
+                                <div class="result-probabilities">
+                                    <h4><i class="fas fa-chart-pie" style="color:var(--accent);margin-right:6px"></i>
+                                        Distribusi Probabilitas</h4>
+                                    <div id="result-probabilities"></div>
+                                </div>
+
+                                <div class="result-features-chart">
+                                    <h4><i class="fas fa-ranking-star" style="color:var(--accent);margin-right:6px"></i>
+                                        Top 5 Feature Importance</h4>
+                                    <div class="feature-importance-mini" id="result-feature-importance"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ═══ DATA VIEW ═══ -->
+                <section id="view-data" class="view">
+                    <div class="data-section">
+                        <div class="data-header">
+                            <div>
+                                <div class="section-title" style="margin-bottom:2px">Data Kelurahan</div>
+                                <div style="font-size:0.8rem;color:var(--text-muted)">25 kelurahan di 5 kecamatan</div>
+                            </div>
+                            <div style="display:flex;align-items:center;gap:12px">
+                                <div class="data-search">
+                                    <i class="fas fa-search"></i>
+                                    <input type="text" id="data-search-input" placeholder="Cari kelurahan...">
+                                </div>
+                                <div class="data-filters">
+                                    <button class="filter-btn active" data-risk="0">Semua</button>
+                                    <button class="filter-btn" data-risk="4">Sangat Rawan</button>
+                                    <button class="filter-btn" data-risk="3">Rawan</button>
+                                    <button class="filter-btn" data-risk="2">Sedang</button>
+                                    <button class="filter-btn" data-risk="1">Aman</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="data-table-wrapper">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th data-sort="nama">Kelurahan</th>
+                                        <th data-sort="kecamatan">Kecamatan</th>
+                                        <th data-sort="elevasi">Elevasi (m)</th>
+                                        <th data-sort="jarakSungai">Jrk Sungai (m)</th>
+                                        <th data-sort="curahHujan">Curah Hujan</th>
+                                        <th>Tata Guna</th>
+                                        <th data-sort="kualitasDrainase">Drainase</th>
+                                        <th data-sort="pengaruhPasang">Pasang</th>
+                                        <th data-sort="kepadatanPenduduk">Kepadatan</th>
+                                        <th>Tanah</th>
+                                        <th data-sort="riskLevel">Risiko</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="data-tbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ═══ REPORT VIEW ═══ -->
+                <section id="view-report" class="view">
+                    <!-- Report Tab Navigation -->
+                    <div class="report-tabs-wrapper">
+                        <div class="report-tabs" id="report-tabs">
+                            <button class="report-tab active" data-report="1"><i class="fas fa-file-alt"></i> Ringkasan
+                                Eksekutif</button>
+                            <button class="report-tab" data-report="2"><i class="fas fa-map-marked-alt"></i> Risiko per
+                                Kecamatan</button>
+                            <button class="report-tab" data-report="3"><i class="fas fa-cogs"></i> Evaluasi
+                                Model</button>
+                            <button class="report-tab" data-report="4"><i class="fas fa-chart-area"></i> Parameter
+                                Spasial</button>
+                            <button class="report-tab" data-report="5"><i class="fas fa-water"></i> Pasang Surut &
+                                Hujan</button>
+                            <button class="report-tab" data-report="6"><i class="fas fa-map"></i> Sebaran
+                                Risiko</button>
+                            <button class="report-tab" data-report="7"><i class="fas fa-users"></i> Kepadatan &
+                                Dampak</button>
+                            <button class="report-tab" data-report="8"><i class="fas fa-lightbulb"></i>
+                                Kesimpulan</button>
+                        </div>
+                    </div>
+
+                    <!-- Report Panels -->
+                    <div class="report-section">
+
+                        <!-- ══ REPORT 1: Ringkasan Eksekutif ══ -->
+                        <div class="report-panel active" id="report-panel-1">
+                            <div class="report-card">
+                                <div class="report-toolbar">
+                                    <div class="report-filter-bar">
+                                        <select class="report-filter-select" id="report-month-1"></select>
+                                        <select class="report-filter-select" id="report-year-1"></select>
+                                    </div>
+                                    <div class="report-export-btns">
+                                        <button class="btn-export btn-pdf" onclick="exportReportPDF(1)"><i
+                                                class="fas fa-file-pdf"></i> PDF</button>
+                                        <button class="btn-export btn-excel" onclick="exportReportExcel(1)"><i
+                                                class="fas fa-file-excel"></i> Excel</button>
+                                    </div>
+                                </div>
+                                <div class="report-content" id="report-content-1">
+                                    <div class="report-title">Ringkasan Eksekutif Analisis Banjir Rob</div>
+                                    <div class="report-date" id="report-date-1">-</div>
+                                    <div id="report-body-1"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ══ REPORT 2: Analisis Risiko per Kecamatan ══ -->
+                        <div class="report-panel" id="report-panel-2">
+                            <div class="report-card">
+                                <div class="report-toolbar">
+                                    <div class="report-filter-bar">
+                                        <select class="report-filter-select" id="report-month-2"></select>
+                                        <select class="report-filter-select" id="report-year-2"></select>
+                                    </div>
+                                    <div class="report-export-btns">
+                                        <button class="btn-export btn-pdf" onclick="exportReportPDF(2)"><i
+                                                class="fas fa-file-pdf"></i> PDF</button>
+                                        <button class="btn-export btn-excel" onclick="exportReportExcel(2)"><i
+                                                class="fas fa-file-excel"></i> Excel</button>
+                                    </div>
+                                </div>
+                                <div class="report-content" id="report-content-2">
+                                    <div class="report-title">Analisis Risiko per Kecamatan</div>
+                                    <div class="report-date" id="report-date-2">-</div>
+                                    <div id="report-body-2"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ══ REPORT 3: Evaluasi Model Random Forest ══ -->
+                        <div class="report-panel" id="report-panel-3">
+                            <div class="report-card">
+                                <div class="report-toolbar">
+                                    <div class="report-filter-bar">
+                                        <select class="report-filter-select" id="report-month-3"></select>
+                                        <select class="report-filter-select" id="report-year-3"></select>
+                                    </div>
+                                    <div class="report-export-btns">
+                                        <button class="btn-export btn-pdf" onclick="exportReportPDF(3)"><i
+                                                class="fas fa-file-pdf"></i> PDF</button>
+                                        <button class="btn-export btn-excel" onclick="exportReportExcel(3)"><i
+                                                class="fas fa-file-excel"></i> Excel</button>
+                                    </div>
+                                </div>
+                                <div class="report-content" id="report-content-3">
+                                    <div class="report-title">Evaluasi Model Hybrid RF-LSTM & XAI</div>
+                                    <div class="report-date" id="report-date-3">-</div>
+                                    <div id="report-body-3"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ══ REPORT 4: Analisis Parameter Spasial ══ -->
+                        <div class="report-panel" id="report-panel-4">
+                            <div class="report-card">
+                                <div class="report-toolbar">
+                                    <div class="report-filter-bar">
+                                        <select class="report-filter-select" id="report-month-4"></select>
+                                        <select class="report-filter-select" id="report-year-4"></select>
+                                    </div>
+                                    <div class="report-export-btns">
+                                        <button class="btn-export btn-pdf" onclick="exportReportPDF(4)"><i
+                                                class="fas fa-file-pdf"></i> PDF</button>
+                                        <button class="btn-export btn-excel" onclick="exportReportExcel(4)"><i
+                                                class="fas fa-file-excel"></i> Excel</button>
+                                    </div>
+                                </div>
+                                <div class="report-content" id="report-content-4">
+                                    <div class="report-title">Analisis Parameter Spasial</div>
+                                    <div class="report-date" id="report-date-4">-</div>
+                                    <div id="report-body-4"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ══ REPORT 5: Pasang Surut & Curah Hujan ══ -->
+                        <div class="report-panel" id="report-panel-5">
+                            <div class="report-card">
+                                <div class="report-toolbar">
+                                    <div class="report-filter-bar">
+                                        <select class="report-filter-select" id="report-month-5"></select>
+                                        <select class="report-filter-select" id="report-year-5"></select>
+                                    </div>
+                                    <div class="report-export-btns">
+                                        <button class="btn-export btn-pdf" onclick="exportReportPDF(5)"><i
+                                                class="fas fa-file-pdf"></i> PDF</button>
+                                        <button class="btn-export btn-excel" onclick="exportReportExcel(5)"><i
+                                                class="fas fa-file-excel"></i> Excel</button>
+                                    </div>
+                                </div>
+                                <div class="report-content" id="report-content-5">
+                                    <div class="report-title">Analisis Pasang Surut & Curah Hujan</div>
+                                    <div class="report-date" id="report-date-5">-</div>
+                                    <div id="report-body-5"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ══ REPORT 6: Peta Sebaran Risiko ══ -->
+                        <div class="report-panel" id="report-panel-6">
+                            <div class="report-card">
+                                <div class="report-toolbar">
+                                    <div class="report-filter-bar">
+                                        <select class="report-filter-select" id="report-month-6"></select>
+                                        <select class="report-filter-select" id="report-year-6"></select>
+                                    </div>
+                                    <div class="report-export-btns">
+                                        <button class="btn-export btn-pdf" onclick="exportReportPDF(6)"><i
+                                                class="fas fa-file-pdf"></i> PDF</button>
+                                        <button class="btn-export btn-excel" onclick="exportReportExcel(6)"><i
+                                                class="fas fa-file-excel"></i> Excel</button>
+                                    </div>
+                                </div>
+                                <div class="report-content" id="report-content-6">
+                                    <div class="report-title">Peta Sebaran Risiko Banjir Rob</div>
+                                    <div class="report-date" id="report-date-6">-</div>
+                                    <div id="report-body-6"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ══ REPORT 7: Kepadatan Penduduk & Dampak ══ -->
+                        <div class="report-panel" id="report-panel-7">
+                            <div class="report-card">
+                                <div class="report-toolbar">
+                                    <div class="report-filter-bar">
+                                        <select class="report-filter-select" id="report-month-7"></select>
+                                        <select class="report-filter-select" id="report-year-7"></select>
+                                    </div>
+                                    <div class="report-export-btns">
+                                        <button class="btn-export btn-pdf" onclick="exportReportPDF(7)"><i
+                                                class="fas fa-file-pdf"></i> PDF</button>
+                                        <button class="btn-export btn-excel" onclick="exportReportExcel(7)"><i
+                                                class="fas fa-file-excel"></i> Excel</button>
+                                    </div>
+                                </div>
+                                <div class="report-content" id="report-content-7">
+                                    <div class="report-title">Profil Kepadatan Penduduk & Dampak Risiko</div>
+                                    <div class="report-date" id="report-date-7">-</div>
+                                    <div id="report-body-7"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ══ REPORT 8: Kesimpulan & Rekomendasi ══ -->
+                        <div class="report-panel" id="report-panel-8">
+                            <div class="report-card">
+                                <div class="report-toolbar">
+                                    <div class="report-filter-bar">
+                                        <select class="report-filter-select" id="report-month-8"></select>
+                                        <select class="report-filter-select" id="report-year-8"></select>
+                                    </div>
+                                    <div class="report-export-btns">
+                                        <button class="btn-export btn-pdf" onclick="exportReportPDF(8)"><i
+                                                class="fas fa-file-pdf"></i> PDF</button>
+                                        <button class="btn-export btn-excel" onclick="exportReportExcel(8)"><i
+                                                class="fas fa-file-excel"></i> Excel</button>
+                                    </div>
+                                </div>
+                                <div class="report-content" id="report-content-8">
+                                    <div class="report-title">Kesimpulan & Rekomendasi Strategis</div>
+                                    <div class="report-date" id="report-date-8">-</div>
+                                    <div id="report-body-8"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </section>
+
+                <!-- ═══ MODEL MANAGEMENT VIEW ═══ -->
+                <section id="view-model-management" class="view">
+                    <div class="prediction-layout">
+                        <!-- Content Card -->
+                        <div class="prediction-form-card" style="width: 100%;">
+                            <div class="section-title">
+                                <i class="fas fa-microchip" style="color:var(--accent);margin-right:8px"></i>
+                                Manajemen Model AI (Hybrid RF-LSTM)
+                            </div>
+                            <div class="section-subtitle">Kontrol Administrator untuk Pelatihan Ulang Model</div>
+                            
+                            <div style="display: flex; gap: 20px; flex-wrap: wrap; margin-top: 20px;">
+                                <div class="stat-card" style="flex: 1; min-width: 300px; background: var(--bg-hover);">
+                                    <div class="stat-card-header">
+                                        <div class="stat-card-icon"><i class="fas fa-cogs"></i></div>
+                                        <span class="stat-card-label">Status Model Saat Ini</span>
+                                    </div>
+                                    <div class="stat-card-value" id="admin-model-accuracy" style="color: var(--accent);">0%</div>
+                                    <div class="stat-card-sub">Akurasi Validasi Model</div>
+                                    <div style="margin-top: 15px; font-size: 0.9rem; border-top: 1px solid var(--border-color); padding-top: 10px;">
+                                        <div style="display:flex; justify-content:space-between; margin-bottom:5px;"><span><strong>Trees (RF):</strong></span> <span id="admin-model-trees">0</span></div>
+                                        <div style="display:flex; justify-content:space-between; margin-bottom:5px;"><span><strong>Max Depth:</strong></span> <span id="admin-model-depth">0</span></div>
+                                        <div style="display:flex; justify-content:space-between;"><span><strong>Status:</strong></span> <span id="admin-model-statusbadge" style="color:var(--success);">Trained</span></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="stat-card" style="flex: 2; min-width: 300px; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; background: var(--bg-hover); border: 1px solid var(--border-color);">
+                                    <h3 style="margin-bottom: 15px; font-size: 1.1rem; color: var(--text);"><i class="fas fa-sync" style="margin-right: 8px;"></i> Force Retrain Model</h3>
+                                    <p style="margin-bottom: 20px; font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6;">
+                                        Gunakan fitur ini untuk melatih ulang model secara paksa dari data spasial dan temporal terbaru. 
+                                        Proses ini akan melatih Random Forest baru yang memanfaatkan ekstraksi embedding LSTM dari data iklim 3 bulan terakhir.
+                                        Tindakan ini mungkin memakan waktu beberapa saat dan memblokir visualisasi sementara.
+                                    </p>
+                                    <button class="btn-predict" id="btn-force-retrain" style="width: auto; padding: 12px 24px; margin-bottom: 10px;">
+                                        <i class="fas fa-bolt"></i> Mulai Pelatihan Ulang Model (Retrain)
+                                    </button>
+                                    <button class="btn-predict" id="btn-sync-live-data" style="width: auto; padding: 12px 24px; background: #0ea5e9; border-color: #0ea5e9;">
+                                        <i class="fas fa-cloud-download-alt"></i> Sinkronisasi Cuaca Live (Open-Meteo API)
+                                    </button>
+                                    <div id="retrain-status-message" style="margin-top: 15px; font-size: 0.9rem; display: none; padding: 10px; border-radius: 6px;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Login Modal -->
+    <div id="login-modal" class="modal-backdrop" onclick="if(event.target===this)closeLoginModal()">
+        <div class="modal-dialog modal-sm">
+            <button class="modal-close" onclick="closeLoginModal()"><i class="fas fa-times"></i></button>
+            <div class="modal-body">
+                <div class="login-header">
+                    <i class="fas fa-user-shield"></i>
+                    <h3>Admin Authentication</h3>
+                    <p>Masukkan kredensial untuk mengakses mode manajemen data</p>
+                </div>
+                <form id="login-form" onsubmit="handleLogin(event)">
+                    <div class="form-group">
+                        <label class="form-label">Username</label>
+                        <input type="text" id="login-username" class="form-select" placeholder="admin" required>
+                    </div>
+                    <div class="form-group" style="margin-top:10px">
+                        <label class="form-label">Password</label>
+                        <input type="password" id="login-password" class="form-select" placeholder="••••••••" required>
+                    </div>
+                    <div id="login-error" class="login-error-msg" style="display:none"></div>
+                    <button type="submit" class="btn-predict" style="margin-top:20px">
+                        <i class="fas fa-sign-in-alt"></i> Login Admin
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chatbot Virtual Assistant -->
+    <div class="chatbot-container">
+        <button id="chat-toggle" title="BARITO AI Assistant">
+            <i class="fas fa-comment-dots"></i>
+        </button>
+
+        <div class="chat-panel" id="chat-panel">
+            <div class="chat-header">
+                <div class="chat-header-info">
+                    <div class="chat-header-avatar">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div>
+                        <div class="chat-header-title">BARITO AI Assistant</div>
+                        <div class="chat-header-status">
+                            <span class="status-dot"></span> Online & Data-Linked
+                        </div>
+                    </div>
+                </div>
+                <button id="chat-close"><i class="fas fa-times"></i></button>
+            </div>
+
+            <!-- API Key Configure -->
+            <div class="api-key-banner" id="api-key-banner">
+                <span class="api-key-label">Konfigurasi Gemini API Key</span>
+                <div class="api-key-input-group">
+                    <input type="password" id="gemini-api-key" placeholder="Masukkan API Key Anda...">
+                    <button id="save-api-key">Simpan</button>
+                </div>
+            </div>
+
+            <div class="chat-messages" id="chat-messages">
+                <!-- Messages will be injected here -->
+            </div>
+
+            <div class="chat-quick-actions">
+                <button class="chat-quick-btn" data-prompt="Kelurahan mana yang paling rawan?">Paling Rawan</button>
+                <button class="chat-quick-btn"
+                    data-prompt="Apa rekomendasi mitigasi untuk Banjarmasin?">Mitigasi</button>
+                <button class="chat-quick-btn" data-prompt="Bagaimana akurasi model Hybrid RF-LSTM?">Akurasi
+                    Model</button>
+                <button class="chat-quick-btn" data-prompt="Berapa total kelurahan yang dianalisis?">Statistik</button>
+            </div>
+
+            <div class="chat-footer">
+                <div class="chat-input-wrapper">
+                    <button id="chat-mic" title="Bicara"><i class="fas fa-microphone"></i></button>
+                    <input type="text" id="chat-input" placeholder="Ketik pertanyaan di sini..." autocomplete="off">
+                    <button id="chat-send"><i class="fas fa-paper-plane"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Export Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/api.js?v=3"></script>
+    <script src="js/map.js"></script>
+    <script src="js/charts.js"></script>
+    <script src="js/interactions.js"></script>
+    <script src="js/chatbot.js"></script>
+    <script src="js/decision_agent.js"></script>
+    <script src="js/app.js?v=3"></script>
+
+</body>
+
+</html>
