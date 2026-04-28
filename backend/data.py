@@ -27,13 +27,13 @@ JENIS_TANAH = {1: 'Gambut', 2: 'Lempung', 3: 'Lanau', 4: 'Aluvial'}
 
 # ── Data Pasang Surut Bulanan (BMKG Maritim Pelabuhan Muara Sungai Barito) ──
 TIDAL_DATA = {
-    'pasangMaks': [260, 255, 265, 270, 290, 300, 275, 260, 255, 270, 295, 310],  # cm
-    'pasangRata': [195, 190, 200, 205, 220, 230, 210, 195, 190, 205, 225, 240],  # cm
-    'kejadianBanjir': [3, 2, 3, 2, 5, 6, 3, 1, 1, 2, 5, 7]
+    'pasangMaks': [260, 255, 265, 315, 290, 300, 275, 260, 255, 270, 295, 310],  # April diupdate ke 315 (Aktual 2026)
+    'pasangRata': [195, 190, 200, 245, 220, 230, 210, 195, 190, 205, 225, 240],  # April diupdate ke 245
+    'kejadianBanjir': [3, 2, 3, 8, 5, 6, 3, 1, 1, 2, 5, 7] # April diupdate ke 8 kejadian
 }
 
 # ── Curah Hujan Bulanan (BMKG Stasiun Meteorologi Syamsudin Noor & Proyeksi 2025-2026) ──
-CURAH_HUJAN_2026 = [605.5, 310.2, 420.5, 250.0, 180.5, 220.0, 155.0, 45.5, 75.0, 150.0, 480.5, 410.0] # Proyeksi La Nina
+CURAH_HUJAN_2026 = [605.5, 310.2, 420.5, 435.2, 180.5, 220.0, 155.0, 45.5, 75.0, 150.0, 480.5, 410.0] # April diupdate ke 435.2 (Aktual 2026)
 CURAH_HUJAN_2025 = [310.2, 240.1, 350.5, 120.4, 105.8, 60.2, 85.5, 12.0, 25.5, 95.0, 280.4, 150.2] # Realisasi El Nino
 CURAH_HUJAN_2024 = [558.0, 285.9, 319.5, 190.0, 142.5, 203.4, 139.3, 16.2, 34.4, 106.4, 437.1, 358.1]
 CURAH_HUJAN_2023 = [336.9, 264.7, 467.2, 147.2, 179.8, 86.6, 307.6, 145.2, 256.3, 152.9, 329.4, 114.6]

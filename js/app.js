@@ -66,13 +66,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Wireframe Mode Toggle
     const wireframeBtn = document.getElementById('wireframe-toggle-btn');
-    const exportBtn = document.getElementById('export-wireframe-btn');
     const exitWireframeBtn = document.getElementById('exit-wireframe-btn');
 
     function syncWireframeState() {
         const isWireframe = document.body.classList.contains('wireframe-mode');
         if (wireframeBtn) wireframeBtn.style.display = isWireframe ? 'none' : 'flex';
-        if (exportBtn) exportBtn.style.display = isWireframe ? 'flex' : 'none';
         if (exitWireframeBtn) exitWireframeBtn.style.display = isWireframe ? 'flex' : 'none';
     }
 
@@ -93,50 +91,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         syncWireframeState();
     }
 
-    // Export Wireframe to PNG using html2canvas
-    if (exportBtn) {
-        exportBtn.addEventListener('click', async () => {
-            try {
-                if (typeof html2canvas === 'undefined') {
-                    if (typeof showToast === 'function') showToast('Mengunduh modul canvas...', 'info');
-                    await new Promise(resolve => {
-                        const script = document.createElement('script');
-                        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
-                        script.onload = resolve;
-                        document.head.appendChild(script);
-                    });
-                }
-                
-                if (typeof showToast === 'function') showToast('Sedang membuat PNG Balsamiq Mockup...', 'info');
-                
-                // Hide purely UI elements that shouldn't be in the mockup
-                exportBtn.style.display = 'none';
-                if (exitWireframeBtn) exitWireframeBtn.style.display = 'none';
-                
-                const canvas = await html2canvas(document.body, {
-                    backgroundColor: '#f5f5dc',
-                    scale: 2,
-                    useCORS: true,
-                    logging: false
-                });
-                
-                exportBtn.style.display = 'flex';
-                if (exitWireframeBtn) exitWireframeBtn.style.display = 'flex';
-                
-                const link = document.createElement('a');
-                link.download = 'barito_balsamiq_mockup.png';
-                link.href = canvas.toDataURL('image/png');
-                link.click();
-                
-                if (typeof showToast === 'function') showToast('Berhasil mengexport Mockup!', 'success');
-            } catch (err) {
-                console.error('Export error:', err);
-                if (typeof showToast === 'function') showToast('Gagal mengekspor gambar.', 'error');
-                exportBtn.style.display = 'flex';
-                if (exitWireframeBtn) exitWireframeBtn.style.display = 'flex';
-            }
-        });
-    }
+    // Note: Export logic removed as requested
 
     // Hide loading screen
     setTimeout(() => {

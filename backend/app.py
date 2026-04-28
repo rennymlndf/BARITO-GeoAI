@@ -4,7 +4,8 @@
 # Spatio-Temporal Hybrid RF-LSTM Prediction Backend
 # ========================================================================
 
-from flask import Flask, request, jsonify
+import os
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from model import get_model
 from data import (
@@ -17,7 +18,10 @@ from data import (
     get_stats_by_month, get_month_label, compute_temporal_risk
 )
 from intelligence_gatherer import get_intelligence
-from database import db_session, Kelurahan, TidalData, RainfallData, User
+from database import (
+    db_session, Kelurahan, TidalData, RainfallData, User, 
+    AdminLog, ModelEvaluation, ModelTrainingParam, FloodIncident
+)
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 from werkzeug.security import check_password_hash
 from datetime import timedelta
@@ -41,11 +45,19 @@ def get_db_data_available():
     except Exception:
         return False
 
-# ── Auto-train model on startup ──
+# ── Static File Serving (Root Directory) ──
+@app.route('/<path:path>')
+def serve_static(path):
+    root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+    return send_from_directory(root_dir, path)
+
+@app.route('/')
+def serve_index():
+    root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+    return send_from_directory(root_dir, 'index.html')
 
 # ── Auto-train model on startup ──
 model = get_model()
-
 
 @app.route('/', methods=['GET'])
 def index():
@@ -98,6 +110,13 @@ def login():
         
     user = User.query.filter_by(username=username).first()
     if user and check_password_hash(user.password_hash, password):
+        # Log successful login
+        try:
+            log = AdminLog(user_id=user.id, action="Login", details=f"User {username} berhasil login")
+            db_session.add(log)
+            db_session.commit()
+        except Exception: pass
+            
         access_token = create_access_token(identity=username)
         return jsonify(access_token=access_token, role=user.role)
     
@@ -129,6 +148,15 @@ def update_kelurahan():
         if 'penduduk' in data: kel.penduduk = int(data['penduduk'])
         
         db_session.commit()
+        
+        # Log update
+        try:
+            current_user = get_jwt_identity()
+            admin = User.query.filter_by(username=current_user).first()
+            log = AdminLog(user_id=admin.id if admin else None, action="Update Kelurahan", details=f"Update data spasial Kelurahan {kel.nama}")
+            db_session.add(log)
+            db_session.commit()
+        except Exception: pass
         
         # Update in-memory data that model.train() actually uses
         for kel_data in KELURAHAN_DATA:
@@ -188,6 +216,15 @@ def update_climate():
                     r.rainfall = float(rain_data[r.month - 1])
                     
             db_session.commit()
+            
+            # Log update
+            try:
+                current_user = get_jwt_identity()
+                admin = User.query.filter_by(username=current_user).first()
+                log = AdminLog(user_id=admin.id if admin else None, action="Update Iklim", details="Update dataset curah hujan & pasang surut global")
+                db_session.add(log)
+                db_session.commit()
+            except Exception: pass
             
         # Retrain model automatically
         import threading
@@ -260,6 +297,72 @@ def sync_live_data():
             return jsonify({'error': f'Gagal membaca file data dinamis: {str(e)}'}), 500
     else:
         return jsonify({'error': f'Gagal sinkronisasi API: {msg}'}), 500
+
+
+# ════════════════════════════════════════════
+# NEW ADMIN & MONITORING ENDPOINTS
+# ════════════════════════════════════════════
+
+@app.route('/api/admin/logs', methods=['GET'])
+@jwt_required()
+def get_admin_logs():
+    """Mengambil log aktivitas admin terbaru"""
+    try:
+        logs = AdminLog.query.order_by(AdminLog.timestamp.desc()).limit(50).all()
+        return jsonify({
+            "logs": [{
+                "id": log.id,
+                "user": log.user_rel.username if log.user_rel else "System",
+                "action": log.action,
+                "details": log.details,
+                "timestamp": log.timestamp.isoformat()
+            } for log in logs]
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/admin/model/history', methods=['GET'])
+@jwt_required()
+def get_model_history():
+    """Mengambil histori evaluasi pelatihan model AI"""
+    try:
+        history = ModelEvaluation.query.order_by(ModelEvaluation.timestamp.desc()).all()
+        return jsonify({
+            "history": [{
+                "id": h.id,
+                "timestamp": h.timestamp.isoformat(),
+                "accuracy": h.accuracy,
+                "precision": h.precision,
+                "recall": h.recall,
+                "f1": h.f1_score,
+                "n_samples": h.n_samples,
+                "params": {
+                    "n_estimators": h.training_params.n_estimators,
+                    "max_depth": h.training_params.max_depth,
+                    "lstm_units": h.training_params.lstm_units
+                } if h.training_params else None
+            } for h in history]
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/admin/incidents', methods=['GET'])
+def get_flood_incidents():
+    """Mengambil laporan kejadian banjir lapangan"""
+    try:
+        incidents = FloodIncident.query.order_by(FloodIncident.date.desc()).all()
+        return jsonify({
+            "incidents": [{
+                "id": inc.id,
+                "kelurahan": Kelurahan.query.get(inc.kelurahan_id).nama if Kelurahan.query.get(inc.kelurahan_id) else "Unknown",
+                "date": inc.date.isoformat(),
+                "depth": inc.depth_cm,
+                "description": inc.description,
+                "verified": bool(inc.is_verified)
+            } for inc in incidents]
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 @app.route('/api/predict', methods=['POST'])
@@ -467,7 +570,7 @@ def kelurahan_temporal(kel_id):
     r_monthly = CURAH_HUJAN_BULANAN
     if db_available:
         try:
-            db_tide = TidalData.query.all()
+            db_tide = TidalData.query.order_by(TidalData.month).all()
             if db_tide:
                 t_data = {
                     'pasangMaks': [t.pasang_maks for t in db_tide],
@@ -510,19 +613,33 @@ def stats():
 
     if db_available:
         try:
-            db_tide = TidalData.query.all()
+            db_tide = TidalData.query.order_by(TidalData.month).all()
             if db_tide:
                 t_data = {
                     'pasangMaks': [t.pasang_maks for t in db_tide],
                     'pasangRata': [t.pasang_rata for t in db_tide],
                     'kejadianBanjir': [t.kejadian_banjir for t in db_tide]
                 }
-            db_rain = RainfallData.query.all()
+            
+            # Fetch all rainfall data ordered by month
+            db_rain = RainfallData.query.order_by(RainfallData.year, RainfallData.month).all()
             if db_rain:
                 r_2024 = [r.rainfall for r in db_rain if r.year == 2024]
                 r_2023 = [r.rainfall for r in db_rain if r.year == 2023]
-                r_monthly = [(r_2024[i] + r_2023[i]) / 2 for i in range(12)]
-        except Exception:
+                
+                # Robust average calculation (handle missing years/data)
+                r_monthly = []
+                for i in range(12):
+                    vals = []
+                    if i < len(r_2024): vals.append(r_2024[i])
+                    if i < len(r_2023): vals.append(r_2023[i])
+                    
+                    if vals:
+                        r_monthly.append(sum(vals) / len(vals))
+                    else:
+                        r_monthly.append(CURAH_HUJAN_BULANAN[i]) # Global fallback
+        except Exception as e:
+            print(f"[BARITO] Error fetching stats data: {e}")
             pass
 
     result = get_stats_by_month(month)

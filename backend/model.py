@@ -121,6 +121,41 @@ class HybridRFLSTM:
             zip(hybrid_feature_names, self.rf_model.feature_importances_.tolist())
         )
         
+        # -- Log to Database --
+        try:
+            from database import db_session, ModelEvaluation, ModelTrainingParam
+            
+            # Calculate full metrics
+            y_pred = self.rf_model.predict(X_hybrid_test)
+            acc = accuracy_score(y_test, y_pred)
+            prec = precision_score(y_test, y_pred, average='weighted')
+            rec = recall_score(y_test, y_pred, average='weighted')
+            f1 = f1_score(y_test, y_pred, average='weighted')
+            
+            session = db_session()
+            new_eval = ModelEvaluation(
+                accuracy=float(acc),
+                precision=float(prec),
+                recall=float(rec),
+                f1_score=float(f1),
+                n_samples=len(X_spatial)
+            )
+            session.add(new_eval)
+            session.flush() # Get ID
+            
+            new_params = ModelTrainingParam(
+                evaluation_id=new_eval.id,
+                n_estimators=self.n_estimators,
+                max_depth=self.max_depth,
+                lstm_units=self.lstm_units,
+                random_state=self.random_state
+            )
+            session.add(new_params)
+            session.commit()
+            print(f"[BARITO] Evaluasi Model berhasil dicatat ke Database (ID: {new_eval.id}, Accuracy: {acc:.4f})")
+        except Exception as db_err:
+            print(f"[BARITO] Gagal mencatat evaluasi ke database: {db_err}")
+
         return {
             'accuracy': self.accuracy,
             'cv_mean': float(self.cv_scores.mean()),
@@ -136,6 +171,7 @@ class HybridRFLSTM:
             'feature_importances': self.feature_importances,
             'feature_names': hybrid_feature_names
         }
+
     
     def predict(self, features):
         if not self.is_trained:
