@@ -1,8 +1,5 @@
-# pyre-ignore-all-errors
-# ========================================================================
-# app.py - Flask API Server untuk BARITO
-# Spatio-Temporal Hybrid RF-LSTM Prediction Backend
-# ========================================================================
+# app.py - Backend Server Flask buat Project BARITO
+# Implementasi Hybrid RF-LSTM untuk prediksi banjir Banjarmasin
 
 import os
 from flask import Flask, request, jsonify, send_from_directory
@@ -65,9 +62,7 @@ def index():
     return f"<h1>BARITO Backend is Active</h1><p>Banjarmasin Adaptive Rob Intelligence and Temporal Observation</p><p>API is running at /api</p>"
 
 
-# ════════════════════════════════════════════
-# API ENDPOINTS
-# ════════════════════════════════════════════
+# --- API ENDPOINTS ---
 
 @app.route('/api/health', methods=['GET'])
 def health():
@@ -100,7 +95,7 @@ def login():
     if not username or not password:
         return jsonify({"error": "Username dan password diperlukan"}), 400
     
-    # Hardcoded bypass admin for demo/development (Skripsi/Tesis mode)
+    # Bypass admin buat kebutuhan demo / sidang skripsi
     if username == 'admin' and password == 'admin123':
         access_token = create_access_token(identity=username)
         return jsonify(access_token=access_token, role='admin')
@@ -299,9 +294,7 @@ def sync_live_data():
         return jsonify({'error': f'Gagal sinkronisasi API: {msg}'}), 500
 
 
-# ════════════════════════════════════════════
-# NEW ADMIN & MONITORING ENDPOINTS
-# ════════════════════════════════════════════
+# --- ADMIN & MONITORING ---
 
 @app.route('/api/admin/logs', methods=['GET'])
 @jwt_required()
@@ -728,12 +721,8 @@ def temporal_compare():
 
 
 if __name__ == '__main__':
-    print("=" * 60)
-    print("  BARITO Backend - Spatio-Temporal Flood Prediction API")
-    print("=" * 60)
-    print(f"  Model: Hybrid RF-LSTM ({model.n_estimators} RF trees, depth={model.max_depth})")
-    print(f"  Accuracy: {model.accuracy:.4f}")
-    print(f"  Features: 12 (8 spatial + 4 LSTM embeddings)")
-    print(f"  Samples: 6240 (52 kel. × 12 bln × 10 thn)")
-    print("=" * 60)
+    print("-" * 30)
+    print(" BARITO Backend Running...")
+    print(f" Akurasi Model: {model.accuracy:.4f}")
+    print("-" * 30)
     app.run(debug=True, host='0.0.0.0', port=5000)

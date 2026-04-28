@@ -1,7 +1,5 @@
-# pyre-ignore-all-errors
-# ========================================================================
-# model.py - Spatio-Temporal Hybrid RF-LSTM Model
-# ========================================================================
+# model.py - Arsitektur Model Hybrid RF-LSTM
+# Menggabungkan Random Forest (Spasial) dan LSTM (Temporal)
 
 import typing
 import numpy as np
@@ -106,7 +104,7 @@ class HybridRFLSTM:
         X_hybrid_train = self._extract_hybrid_features(X_spat_train, X_temp_train)
         X_hybrid_test = self._extract_hybrid_features(X_spat_test, X_temp_test)
         
-        print("[BARITO] Sedang melatih Random Forest pada fitur Hybrid (Spatial + LSTM Embedding)...")
+        print("-> Melatih Random Forest (Hybrid Features)...")
         self.rf_model.fit(X_hybrid_train, y_train)
         self.is_trained = True
         

@@ -1,8 +1,5 @@
-# pyre-ignore-all-errors
-# ========================================================================
-# data.py - Data Spasial & Temporal Kota Banjarmasin
-# Sumber: BPS 2024, BPBD 2023-2024, BMKG Syamsudin Noor & Maritim Barito
-# ========================================================================
+# data.py - Berisi data spasial dan temporal Kota Banjarmasin
+# Diolah dari: BPS Banjarmasin 2024, Laporan BPBD, dan Data BMKG
 
 import typing
 import numpy as np # type: ignore
@@ -38,7 +35,7 @@ CURAH_HUJAN_2025 = [310.2, 240.1, 350.5, 120.4, 105.8, 60.2, 85.5, 12.0, 25.5, 9
 CURAH_HUJAN_2024 = [558.0, 285.9, 319.5, 190.0, 142.5, 203.4, 139.3, 16.2, 34.4, 106.4, 437.1, 358.1]
 CURAH_HUJAN_2023 = [336.9, 264.7, 467.2, 147.2, 179.8, 86.6, 307.6, 145.2, 256.3, 152.9, 329.4, 114.6]
 
-# Rata-rata 4 tahun berturut-turut untuk baseline bulanan (sampai Maret 2026)
+# Rata-rata 4 tahun buat baseline bulanan (sampai Maret 2026)
 CURAH_HUJAN_BULANAN = [
     (CURAH_HUJAN_2026[i] + CURAH_HUJAN_2025[i] + CURAH_HUJAN_2024[i] + CURAH_HUJAN_2023[i]) / 4 for i in range(12)
 ]

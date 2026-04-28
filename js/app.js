@@ -1,7 +1,5 @@
-// ========================================================================
-// app.js - Main Application Controller (Spatio-Temporal)
-// Backend: Python Flask + scikit-learn Random Forest
-// ========================================================================
+// app.js - Controller Utama Platform BARITO
+// Menghubungkan Frontend dengan Model Hybrid RF-LSTM di Backend
 
 let forest = null; // Compatibility reference
 let modelResults = null;

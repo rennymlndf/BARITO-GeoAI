@@ -5,7 +5,10 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, scoped_session, relationship
 from geoalchemy2 import Geometry
 
-# Database configuration
+# database.py - Skema Database PostgreSQL (SQLAlchemy)
+# Digunakan untuk master data kelurahan dan log model AI
+
+# Database config
 DB_URL = os.getenv("DATABASE_URL", "postgresql://postgres:rennymlndf@localhost:5432/flood_analysis")
 
 engine = create_engine(DB_URL)
@@ -14,7 +17,7 @@ db_session = scoped_session(sessionmaker(autocommit=False, autoflush=False, bind
 Base = declarative_base()
 Base.query = db_session.query_property()
 
-# ── 1. Master Data Tables ──
+# --- Tabel Master ---
 
 class Kecamatan(Base):
     __tablename__ = 'kecamatan'

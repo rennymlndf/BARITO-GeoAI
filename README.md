@@ -1,25 +1,29 @@
-# Panduan Menjalankan Platform BARITO
+# BARITO - Sistem Prediksi Banjir Spatio-Temporal Banjarmasin
+> **Project Skripsi/Riset**: Implementasi Algoritma Hybrid Random Forest & LSTM
 
-BARITO (Banjarmasin Adaptive Rob Intelligence and Temporal Observation) terdiri dari dua bagian yang harus berjalan bersamaan:
+BARITO (Banjarmasin Adaptive Rob Intelligence and Temporal Observation) adalah platform monitoring dan prediksi risiko banjir rob yang dikembangkan khusus untuk wilayah Kota Banjarmasin.
 
-## 1. Menjalankan Backend (Otak AI)
-Backend menggunakan Python Flask untuk memproses model Random Forest dan data real-time.
+## Cara Menjalankan Sistem
 
-1. Buka Terminal/PowerShell.
-2. Pastikan Anda berada di folder proyek.
-3. Jalankan perintah:
-   ```powershell
+### 1. Menjalankan Backend (Server API & Model AI)
+Backend dibangun dengan Python Flask. Pastikan semua library di `requirements.txt` sudah terinstall.
+
+1. Buka terminal (CMD/PowerShell).
+2. Jalankan perintah:
+   ```bash
    python backend/app.py
    ```
-4. Biarkan terminal ini tetap terbuka. Jika muncul tulisan `Running on http://127.0.0.1:5000`, berarti backend sudah aktif.
+3. Tunggu sampai muncul status akurasi model. Server akan running di port 5000.
 
-## 2. Menjalankan Frontend (Tampilan UI)
-Frontend adalah antarmuka web tempat Anda melihat peta dan dashboard.
+### 2. Menjalankan Frontend (Dashboard Dashboard)
+Frontend menggunakan HTML5, CSS3, dan Vanilla JS (Leaflet.js).
 
-1. Buka folder proyek di File Explorer Windows.
-2. Cari file bernama `index.html`.
-3. **Klik kanan** pada `index.html` -> **Open with** -> Pilih Browser (Chrome/Edge/Firefox).
-4. Selesai! Dashboard BARITO akan muncul dan otomatis terhubung ke backend.
+1. Cari file `index.html` di folder utama.
+2. Buka pakai browser favorit (Chrome/Edge direkomendasikan).
+3. Dashboard akan otomatis menarik data dari backend lokal.
 
 ---
-**Penting**: Jika Backend tidak dijalankan, fitur "BARITO AI Assistant" dan "Intelligence Control Tower" akan masuk ke **Mode Lokal** (data statis) karena tidak bisa mengambil data real-time dari server.
+**Catatan Teknis**: 
+- Dataset training digenerate otomatis lewat `backend/data.py`.
+- Jika ingin mengambil dataset mentah untuk lampiran, jalankan `python export_dataset.py`.
+- Sistem mendukung mode "Offline" jika server backend tidak aktif (menggunakan data statis).
