@@ -15,7 +15,7 @@ Backend dibangun dengan Python Flask. Pastikan semua library di `requirements.tx
    ```
 3. Tunggu sampai muncul status akurasi model. Server akan running di port 5000.
 
-### 2. Menjalankan Frontend (Dashboard Dashboard)
+### 2. Menjalankan Frontend (Dashboard)
 Frontend menggunakan HTML5, CSS3, dan Vanilla JS (Leaflet.js).
 
 1. Cari file `index.html` di folder utama.
