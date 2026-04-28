@@ -1,4 +1,4 @@
-id_kelurahan,nama_kelurahan,kecamatan,tahun,bulan,label_risiko,elevasi,jarak_sungai,curah_hujan_lokal,tata_guna_lahan,kualitas_drainase,pengaruh_pasang,kepadatan_penduduk,jenis_tanah,curah_hujan_bulanan,pasang_maks_muara,musim,pasang_trisakti,debit_barito,debit_martapura,curah_hujan_hulu
+id_kel,nama,kecamatan,thn,bln,target_risiko,elevasi,jarak_sungai,ch_lokal,tgl,drainase,pasang_muara,populasi,tanah,ch_bulanan,tide_max,musim,tide_trisakti,q_barito,q_martapura,ch_hulu
 1,Alalak Utara,Banjarmasin Utara,2026,1,4,2.0,80.0,2791.0,1.0,2.0,9.0,7500.0,1.0,312.8490103639162,265.0,1.0,275.0,5606.613088959072,436.06990691903894,510.82474810515987
 1,Alalak Utara,Banjarmasin Utara,2026,2,4,2.0,80.0,2791.0,1.0,2.0,9.0,7500.0,1.0,371.656152096998,260.0,1.0,270.0,5232.8388830284675,398.69248632597845,398.69248632597845
 1,Alalak Utara,Banjarmasin Utara,2026,3,4,2.0,80.0,2791.0,1.0,2.0,9.0,7500.0,1.0,540.4775017756546,270.0,1.0,280.0,5980.387294889677,473.44732751209943,473.44732751209943
