@@ -1,5 +1,5 @@
-# model.py - Arsitektur Model Hybrid RF-LSTM
-# Menggabungkan Random Forest (Spasial) dan LSTM (Temporal)
+# model.py - Implementasi Arsitektur Hybrid RF-LSTM
+# Integrasi Algoritma Random Forest untuk Analisis Spasial dan LSTM untuk Pola Temporal.
 
 import typing
 import numpy as np
@@ -26,10 +26,10 @@ class HybridRFLSTM:
     """
     Model Hybrid Random Forest & LSTM untuk prediksi risiko banjir rob spatio-temporal.
     
-    Logika Arsitektur Hibrida:
-    1. LSTM mengolah 8 fitur temporal sebagai representasi tersembunyi (temporal embed).
-    2. Random Forest menerima 8 fitur spasial DITAMBAH hasil embedding LSTM.
-    3. Random Forest menghasilkan prediksi kelas risiko final (1-4).
+    Prinsip Kerja Arsitektur Hybrid:
+    1. LSTM memproses fitur temporal (time-series) untuk menghasilkan representasi tersembunyi (Temporal Embedding).
+    2. Random Forest mengintegrasikan fitur spasial dengan hasil embedding dari LSTM.
+    3. Output final berupa klasifikasi tingkat risiko banjir (skala 1-4).
     """
     
     def __init__(self, n_estimators=100, max_depth=8, lstm_units=16, random_state=42):
@@ -96,7 +96,7 @@ class HybridRFLSTM:
         self.y_train = y_train
         self.metadata = metadata
         
-        print("[BARITO] Sedang melatih komponen Bidirectional LSTM Feature Extractor (3-Month Sequence)...")
+        print("[BARITO] Menginisialisasi pelatihan komponen Bidirectional LSTM untuk ekstraksi fitur temporal...")
         self._build_lstm()
         X_temp_train_reshape = X_temp_train.reshape(-1, 3, 8)
         self.lstm_classifier.fit(X_temp_train_reshape, y_keras_train, epochs=40, batch_size=32, verbose=0)
@@ -388,10 +388,10 @@ def get_model():
             lstm_units=16,
             random_state=42
         )
-        print("[BARITO] Training Hybrid RF-LSTM Model...")
+        print("[BARITO] Memulai proses pelatihan model Hybrid RF-LSTM...")
         result = _model_instance.train()
         
-        print(f"[BARITO] Model trained! Accuracy: {result['accuracy']:.4f}, "
+        print(f"[BARITO] Pelatihan selesai. Akurasi: {result['accuracy']:.4f}, "
               f"CV: {result['cv_mean']:.4f} ± {result['cv_std']:.4f}")
         print(f"[BARITO] Dataset: {result['n_samples_train']} latih, {result['n_samples_test']} uji, Hybrid {result['n_features_hybrid_total']} fitur")
     return _model_instance

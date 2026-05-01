@@ -1,5 +1,5 @@
-# app.py - Backend Server Flask buat Project BARITO
-# Implementasi Hybrid RF-LSTM untuk prediksi banjir Banjarmasin
+# app.py - Layanan Backend API untuk Sistem BARITO
+# Implementasi Algoritma Hybrid RF-LSTM untuk Analisis Risiko Banjir Spatio-Temporal
 
 import os
 from flask import Flask, request, jsonify, send_from_directory
@@ -58,8 +58,8 @@ model = get_model()
 
 @app.route('/', methods=['GET'])
 def index():
-    """Welcome page"""
-    return f"<h1>BARITO Backend is Active</h1><p>Banjarmasin Adaptive Rob Intelligence and Temporal Observation</p><p>API is running at /api</p>"
+    """Halaman Utama API"""
+    return f"<h1>Layanan Backend BARITO Aktif</h1><p>Banjarmasin Adaptive Rob Intelligence and Temporal Observation</p><p>Titik akhir API tersedia pada direktori /api</p>"
 
 
 # --- API ENDPOINTS ---
@@ -95,7 +95,7 @@ def login():
     if not username or not password:
         return jsonify({"error": "Username dan password diperlukan"}), 400
     
-    # Bypass admin buat kebutuhan demo / sidang skripsi
+    # Mekanisme bypass autentikasi untuk keperluan demonstrasi atau sidang penelitian.
     if username == 'admin' and password == 'admin123':
         access_token = create_access_token(identity=username)
         return jsonify(access_token=access_token, role='admin')
@@ -167,7 +167,7 @@ def update_kelurahan():
         def background_train():
             try:
                 model.train()
-                print(f"[BARITO] Model berhasil dilatih ulang otomatis (di background) pasca-update Kelurahan {kel.nama}")
+                print(f"[BARITO] Pelatihan ulang model berhasil dilakukan secara otomatis setelah pembaruan data Kelurahan {kel.nama}.")
             except Exception as train_err:
                 print(f"[BARITO] Error saat training ulang otomatis: {train_err}")
                 

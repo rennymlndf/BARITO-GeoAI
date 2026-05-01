@@ -8,7 +8,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 QA_CORPUS = [
     {
         "intents": ["apa itu barito", "barito adalah", "jelaskan sistem ini", "sistem apa ini", "apa kepanjangan barito"],
-        "answer": "BARITO (Banjarmasin Adaptive Rob Intelligence and Temporal Observation) adalah sistem intelijen geospasial yang diciptakan untuk memprediksi risiko banjir rob di Banjarmasin menggunakan algoritma Hybrid Random Forest dan LSTM."
+        "answer": "BARITO merupakan sistem yang saya kembangkan untuk melakukan pemantauan dan prediksi risiko banjir rob di Kota Banjarmasin. Sistem ini menggunakan pendekatan Hybrid Random Forest dan LSTM untuk mendapatkan hasil yang presisi."
     },
     {
         "intents": ["berapa banyak fitur yang digunakan", "fitur apa saja", "parameter apa saja", "berapa parameter", "jelaskan 16 fitur"],
@@ -20,7 +20,7 @@ QA_CORPUS = [
     },
     {
         "intents": ["algoritma apa yang dipakai", "metode penelitian", "kenapa random forest", "model ai apa"],
-        "answer": "Sistem ini menggunakan arsitektur Hybrid yang menggabungkan Long Short-Term Memory / LSTM (TensorFlow) dan Random Forest (scikit-learn). LSTM menarik fitur temporal, sedangkan RF menghasilkan vonis akhir dari gabungan fitur spasial dan LSTM embeddings."
+        "answer": "Penelitian ini menggunakan arsitektur Hybrid yang menggabungkan Long Short-Term Memory (LSTM) untuk analisis pola waktu dan Random Forest untuk klasifikasi akhir. LSTM bertugas mengekstraksi fitur temporal, sementara Random Forest menentukan tingkat risiko banjirnya."
     },
     {
         "intents": ["kelurahan mana yang paling rawan", "daerah rawan banjir", "sangat rawan", "paling terdampak", "lokasi banjir terparah"],
@@ -40,7 +40,7 @@ QA_CORPUS = [
     },
     {
         "intents": ["akurasi model", "berapa akurasi", "tingkat keberhasilan", "performa model", "evaluasi model"],
-        "answer": "Akurasi pengujian (Test Accuracy) model arsitektur Hybrid RF-LSTM secara konsisten berada di rentang 88% hingga 90% (Train-Test Split 80/20) pada 6.240 sampel data iklim riil Banjarmasin. Nilai presisi, recall, dan F1-Score ini memadai untuk Sistem Pendukung Keputusan resmi."
+        "answer": "Berdasarkan pengujian, akurasi model Hybrid RF-LSTM ini secara konsisten berada di angka 88% hingga 90%. Metrik ini menunjukkan bahwa model cukup handal untuk digunakan sebagai sistem pendukung keputusan dalam mitigasi banjir."
     },
     {
         "intents": ["rekomendasi mitigasi", "solusi banjir", "apa yang harus dilakukan", "kebijakan pemerintah", "bagaimana mencegah rob", "solusi teknis"],
@@ -48,7 +48,7 @@ QA_CORPUS = [
     },
     {
         "intents": ["siapa kamu", "apakah kamu gemini", "kamu ai apa", "siapa yang membuatmu", "nlp offline", "chatbot ini apa"],
-        "answer": "Saya adalah BARITO Geo-NLP, asisten intelijen virtual berbasis TF-IDF (Term Frequency) yang ditulis menggunakan pustaka scikit-learn Python. Saya beroperasi 100% secara offline mandiri tanpa langganan API berbayar (seperti Gemini Langchain) dan dilatih layaknya Ensiklopedia Khusus pada domain Geospasial Rob Banjarmasin."
+        "answer": "Saya adalah asisten virtual berbasis NLP yang terintegrasi dalam sistem BARITO. Saya diprogram menggunakan metode TF-IDF untuk memahami pertanyaan Anda seputar data penelitian, dataset, dan cara kerja algoritma yang digunakan dalam proyek ini."
     },
     {
         "intents": ["kapan banjir paling tinggi", "bulan rawan rob", "musim banjir", "puncak pasang surut", "bulan apa banjir parah"],

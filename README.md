@@ -1,29 +1,29 @@
 # BARITO - Sistem Prediksi Banjir Spatio-Temporal Banjarmasin
-> **Project Skripsi/Riset**: Implementasi Algoritma Hybrid Random Forest & LSTM
+> **Dokumentasi Penelitian**: Implementasi Algoritma Hybrid Random Forest dan Long Short-Term Memory (LSTM)
 
-BARITO (Banjarmasin Adaptive Rob Intelligence and Temporal Observation) adalah platform monitoring dan prediksi risiko banjir rob yang dikembangkan khusus untuk wilayah Kota Banjarmasin.
+BARITO (Banjarmasin Adaptive Rob Intelligence and Temporal Observation) merupakan platform analisis dan prediksi risiko banjir rob yang dikembangkan khusus untuk karakteristik wilayah Kota Banjarmasin. Sistem ini menggunakan pendekatan kecerdasan buatan untuk mengolah data geospasial dan temporal.
 
-## Cara Menjalankan Sistem
+## Prosedur Penggunaan Sistem
 
-### 1. Menjalankan Backend (Server API & Model AI)
-Backend dibangun dengan Python Flask. Pastikan semua library di `requirements.txt` sudah terinstall.
+### 1. Inisialisasi Backend (Server & Model AI)
+Sistem backend dibangun menggunakan framework Flask. Seluruh dependensi yang diperlukan tercantum dalam file `requirements.txt`.
 
-1. Buka terminal (CMD/PowerShell).
-2. Jalankan perintah:
+1. Buka terminal atau Command Prompt.
+2. Jalankan perintah berikut untuk mengaktifkan server:
    ```bash
    python backend/app.py
    ```
-3. Tunggu sampai muncul status akurasi model. Server akan running di port 5000.
+3. Tunggu hingga proses pelatihan model selesai dan indikator akurasi muncul. Server akan berjalan pada port 5000.
 
-### 2. Menjalankan Frontend (Dashboard)
-Frontend menggunakan HTML5, CSS3, dan Vanilla JS (Leaflet.js).
+### 2. Akses Dashboard (Frontend)
+Bagian antarmuka pengguna dibangun dengan standar HTML5, CSS3, dan Leaflet.js untuk pemetaan interaktif.
 
-1. Cari file `index.html` di folder utama.
-2. Buka pakai browser favorit (Chrome/Edge direkomendasikan).
-3. Dashboard akan otomatis menarik data dari backend lokal.
+1. Buka file `index.html` yang terletak di direktori utama.
+2. Gunakan peramban modern seperti Google Chrome atau Microsoft Edge.
+3. Dashboard akan secara otomatis terhubung dengan API backend untuk menampilkan data prediksi terbaru.
 
 ---
-**Catatan Teknis**: 
-- Dataset training digenerate otomatis lewat `backend/data.py`.
-- Jika ingin mengambil dataset mentah untuk lampiran, jalankan `python export_dataset.py`.
-- Sistem mendukung mode "Offline" jika server backend tidak aktif (menggunakan data statis).
+**Informasi Teknis**: 
+- Data latih (*training dataset*) dihasilkan secara dinamis melalui modul `backend/data.py`.
+- Untuk keperluan lampiran penelitian atau analisis eksternal, dataset dapat diekspor ke format CSV dengan menjalankan `python export_dataset.py`.
+- Sistem dilengkapi dengan mekanisme *failover* (data statis) jika server backend sedang tidak aktif.

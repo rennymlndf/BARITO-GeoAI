@@ -1,5 +1,5 @@
-# data.py - Berisi data spasial dan temporal Kota Banjarmasin
-# Diolah dari: BPS Banjarmasin 2024, Laporan BPBD, dan Data BMKG
+# data.py - Parameter Spasial dan Temporal Kota Banjarmasin
+# Sumber Data: BPS Kota Banjarmasin 2024, Laporan BPBD, dan Data Historis BMKG
 
 import typing
 import numpy as np # type: ignore
@@ -35,7 +35,7 @@ CURAH_HUJAN_2025 = [310.2, 240.1, 350.5, 120.4, 105.8, 60.2, 85.5, 12.0, 25.5, 9
 CURAH_HUJAN_2024 = [558.0, 285.9, 319.5, 190.0, 142.5, 203.4, 139.3, 16.2, 34.4, 106.4, 437.1, 358.1]
 CURAH_HUJAN_2023 = [336.9, 264.7, 467.2, 147.2, 179.8, 86.6, 307.6, 145.2, 256.3, 152.9, 329.4, 114.6]
 
-# Rata-rata 4 tahun buat baseline bulanan (sampai Maret 2026)
+# Perhitungan nilai dasar (baseline) curah hujan menggunakan rata-rata historis
 CURAH_HUJAN_BULANAN = [
     (CURAH_HUJAN_2026[i] + CURAH_HUJAN_2025[i] + CURAH_HUJAN_2024[i] + CURAH_HUJAN_2023[i]) / 4 for i in range(12)
 ]
@@ -248,11 +248,10 @@ def compute_temporal_risk(base_risk, month, elevasi, pengaruh_pasang, kualitas_d
     """
     Menghitung risiko temporal berdasarkan risiko spasial dasar + faktor temporal.
     
-    Logika:
-    - Bulan puncak pasang (Jun, Nov, Des) → risiko naik untuk wilayah rentan
-    - Bulan kemarau (Agu, Sep) → risiko turun untuk wilayah moderat
-    - Curah hujan tinggi + pasang tinggi → risiko naik
-    - Elevasi tinggi + drainase baik → lebih tahan terhadap variasi temporal
+    Logika Perhitungan:
+    - Kenaikan risiko pada puncak pasang air laut (fenomena rob).
+    - Penurunan risiko pada periode musim kemarau.
+    - Faktor ketahanan wilayah dihitung berdasarkan elevasi dan kualitas sistem drainase.
     """
     month_idx = month - 1  # 0-indexed
     
@@ -296,9 +295,9 @@ def compute_temporal_risk(base_risk, month, elevasi, pengaruh_pasang, kualitas_d
 
 def generate_spatiotemporal_dataset(years=12) -> typing.Tuple[np.ndarray, np.ndarray, np.ndarray, typing.List[typing.Dict[str, typing.Any]]]:
     """
-    Ekstraksi data spasial dari 52 Kelurahan x 12 Bulan x 12 Tahun
-    menjadi 7488 sampel data historis untuk pelatihan Hybrid Bidirectional RF-LSTM.
-    Dataset sekarang mensuplai riwayat 3 bulan ke belakang (Sliding Window).
+    Ekstraksi data spasial dari 52 Kelurahan dengan resolusi temporal bulanan.
+    Menghasilkan sampel data historis untuk pelatihan model Hybrid RF-LSTM.
+    Menerapkan mekanisme Sliding Window (3 bulan) untuk menangkap pola musiman.
     """
     import typing
     import random
